@@ -6,24 +6,32 @@ on:
     branches:
       - dev
       - master
+      - release**
     paths-ignore:
-      - 'README*.md'
+      - 'README.md'
+      - 'doc/**'
       - 'fastlane/**'
       - 'assets/**'
       - '.github/**/*.md'
+      - '.github/FUNDING.yml'
+      - '.github/ISSUE_TEMPLATE/**'
   push:
     branches:
       - dev
       - master
     paths-ignore:
-      - 'README*.md'
+      - 'README.md'
+      - 'doc/**'
       - 'fastlane/**'
       - 'assets/**'
       - '.github/**/*.md'
+      - '.github/FUNDING.yml'
+      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   build-and-test-jvm:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
@@ -38,16 +46,10 @@ jobs:
         with:
           java-version: 11
           distribution: "temurin"
+          cache: 'gradle'
 
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-
-      - name: Build debug APK and run jvm tests
-        run: ./gradlew assembleDebug lintDebug testDebugUnitTest --stacktrace -DskipFormatKtlint
+      - name: Build debug APK
+        run: ./gradlew assembleDebug lintDebug --stacktrace -DskipFormatKtlint
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
@@ -58,10 +60,12 @@ jobs:
   test-android:
     # macos has hardware acceleration. See android-emulator-runner action
     runs-on: macos-latest
+    timeout-minutes: 20
     strategy:
       matrix:
-        # api-level 16 is min sdk, but throws errors related to desugaring
+        # api-level 19 is min sdk, but throws errors related to desugaring
         api-level: [ 21, 29 ]
+
     steps:
       - uses: actions/checkout@v3
 
@@ -70,13 +74,7 @@ jobs:
         with:
           java-version: 11
           distribution: "temurin"
-
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          cache: 'gradle'
 
       - name: Run android tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -84,7 +82,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           # workaround to emulator bug: https://github.com/ReactiveCircus/android-emulator-runner/issues/160
           emulator-build: 7425822
-          script: ./gradlew connectedCheck
+          script: ./gradlew connectedCheck --stacktrace
 
 #   sonar:
 #     runs-on: ubuntu-latest
