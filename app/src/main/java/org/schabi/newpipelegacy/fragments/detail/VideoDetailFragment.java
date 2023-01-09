@@ -1086,7 +1086,7 @@ public final class VideoDetailFragment
             player.toggleFullscreen();
         }
 
-        if (!useExternalAudioPlayer) {
+        if (!useExternalAudioPlayer) { && android.os.Build.VERSION.SDK_INT >= 16) {
             openNormalBackgroundPlayer(append);
         } else {
             startOnExternalPlayer(activity, currentInfo, audioStream);
@@ -1584,8 +1584,9 @@ public final class VideoDetailFragment
 
         binding.detailControlsDownload.setVisibility(info.getStreamType() == StreamType.LIVE_STREAM
                 || info.getStreamType() == StreamType.AUDIO_LIVE_STREAM ? View.GONE : View.VISIBLE);
-        binding.detailControlsBackground.setVisibility(info.getAudioStreams().isEmpty()
-                ? View.GONE : View.VISIBLE);
+        binding.detailControlsBackground.setVisibility(
+                info.getAudioStreams().isEmpty() && info.getVideoStreams().isEmpty()
+                        ? View.GONE : View.VISIBLE);
 
         final boolean noVideoStreams =
                 info.getVideoStreams().isEmpty() && info.getVideoOnlyStreams().isEmpty();
