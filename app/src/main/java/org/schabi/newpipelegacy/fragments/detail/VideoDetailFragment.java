@@ -1086,7 +1086,7 @@ public final class VideoDetailFragment
             player.toggleFullscreen();
         }
 
-        if (!useExternalAudioPlayer) { && android.os.Build.VERSION.SDK_INT >= 16) {
+        if (!useExternalAudioPlayer) {
             openNormalBackgroundPlayer(append);
         } else {
             startOnExternalPlayer(activity, currentInfo, audioStream);
